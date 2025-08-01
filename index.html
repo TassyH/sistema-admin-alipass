@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliPass Admin - Redirecionando</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+        }
+        .redirect-container {
+            padding: 2rem;
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <h1>AliPass Admin</h1>
+        <p>Redirecionando para o painel principal...</p>
+    </div>
+
+    <script>
+        // Redireciona automaticamente para a página principal
+        window.onload = function() {
+            window.location.href = 'home.html';
+        };
+    </script>
+</body>
+</html>

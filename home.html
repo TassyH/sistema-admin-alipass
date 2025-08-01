@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliPass Admin - Painel Principal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <div class="logo">
+                <h1>AliPass Admin</h1>
+            </div>
+            <div class="user-info">
+                <span id="user-name">Administrador</span>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <h2>Painel de Controle</h2>
+            <div class="dashboard-cards">
+                <div class="card" onclick="window.location.href='empresa.html'">
+                    <div class="card-icon">
+                        <i class="icon-empresa">🏢</i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Empresas</h3>
+                        <p>Gerenciar cadastro de empresas</p>
+                    </div>
+                </div>
+
+                <div class="card" onclick="window.location.href='restaurante.html'">
+                    <div class="card-icon">
+                        <i class="icon-restaurante">🍽️</i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Restaurantes</h3>
+                        <p>Gerenciar cadastro de restaurantes</p>
+                    </div>
+                </div>
+
+                <div class="card" onclick="window.location.href='funcionarios.html'">
+                    <div class="card-icon">
+                        <i class="icon-funcionarios">👥</i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Funcionários</h3>
+                        <p>Importar e gerenciar funcionários</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <p>&copy; 2023 AliPass - Todos os direitos reservados</p>
+        </footer>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>

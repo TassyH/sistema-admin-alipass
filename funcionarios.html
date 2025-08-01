@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliPass Admin - Gerenciamento de Funcionários</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/funcionarios.css">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <div class="logo">
+                <h1>AliPass Admin</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="home.html">Painel</a></li>
+                    <li><a href="empresa.html">Empresas</a></li>
+                    <li><a href="restaurante.html">Restaurantes</a></li>
+                    <li><a href="funcionarios.html" class="active">Funcionários</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span id="user-name">Administrador</span>
+                <button id="logout-btn" onclick="window.location.href='home.html'">Voltar ao Painel</button>
+            </div>
+        </header>
+
+        <main class="content">
+            <section class="section-header">
+                <h2>Gerenciamento de Funcionários</h2>
+            </section>
+
+            <section id="import-section" class="import-section">
+                <h3>Importar Funcionários</h3>
+                <form id="import-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="empresa-select">Selecione a Empresa</label>
+                            <select id="empresa-select" name="empresa" required>
+                                <option value="">Selecione uma empresa</option>
+                                <!-- Opções serão carregadas via JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group file-upload-group">
+                            <label for="file-upload">Selecione a Planilha (.csv, .xlsx ou .xls)</label>
+                            <input type="file" id="file-upload" name="file-upload" accept=".csv, .xlsx, .xls" disabled>
+                            <div class="file-info" id="file-info">Nenhum arquivo selecionado</div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="btn-preview" class="btn-secondary" disabled>Pré-visualizar</button>
+                        <button type="button" id="btn-import" class="btn-primary" disabled>Importar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="preview-section" class="preview-section hidden">
+                <h3>Pré-visualização dos Dados</h3>
+                <div class="table-container">
+                    <table id="preview-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF</th>
+                                <th>Email</th>
+                                <th>Empresa</th>
+                                <th>CEP</th>
+                                <th>Cidade</th>
+                                <th>Bairro</th>
+                                <th>Saldo</th>
+                                <th>Telefone</th>
+                                <th>WhatsApp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados serão inseridos via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-preview-message" class="no-data-message hidden">
+                    <p>Nenhum dado para pré-visualizar. Selecione uma planilha válida.</p>
+                </div>
+            </section>
+
+            <section id="funcionarios-section" class="table-section">
+                <h3>Funcionários Cadastrados</h3>
+                <div class="table-container">
+                    <table id="funcionarios-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF</th>
+                                <th>Email</th>
+                                <th>Empresa</th>
+                                <th>CEP</th>
+                                <th>Cidade</th>
+                                <th>Bairro</th>
+                                <th>Saldo</th>
+                                <th>Telefone</th>
+                                <th>WhatsApp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados serão inseridos via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-funcionarios-message" class="no-data-message hidden">
+                    <p>Nenhum funcionário cadastrado. Importe uma planilha para adicionar.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <p>&copy; 2023 AliPass - Todos os direitos reservados</p>
+        </footer>
+    </div>
+
+    <!-- Modal de carregamento -->
+    <div id="loading-modal" class="modal hidden">
+        <div class="modal-content loading-content">
+            <div class="loader"></div>
+            <p id="loading-message">Processando dados...</p>
+        </div>
+    </div>
+
+    <!-- Modal de resultado -->
+    <div id="result-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="result-title">Resultado da Importação</h3>
+            <p id="result-message"></p>
+            <div class="modal-actions">
+                <button id="btn-close-result" class="btn-primary">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/lib/xlsx.full.min.js"></script>
+    <script src="js/funcionarios.js"></script>
+</body>
+</html>
