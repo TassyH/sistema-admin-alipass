@@ -38,42 +38,103 @@
                 <form id="empresa-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="nome">Nome da Empresa</label>
-                            <input type="text" id="nome" name="nome" required>
+                            <label for="razao_social">Razão Social*</label>
+                            <input type="text" id="razao_social" name="razao_social" required>
                         </div>
                         <div class="form-group">
-                            <label for="cnpj">CNPJ</label>
-                            <input type="text" id="cnpj" name="cnpj" required>
+                            <label for="nome_fantasia">Nome Fantasia*</label>
+                            <input type="text" id="nome_fantasia" name="nome_fantasia" required>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="email">Email</label>
+                            <label for="cnpj">CNPJ*</label>
+                            <input type="text" id="cnpj" name="cnpj" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="inscricao_estadual">Inscrição Estadual</label>
+                            <input type="text" id="inscricao_estadual" name="inscricao_estadual">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="data_abertura">Data de Abertura</label>
+                            <input type="date" id="data_abertura" name="data_abertura">
+                        </div>
+                        <div class="form-group">
+                            <label for="segmento">Segmento</label>
+                            <input type="text" id="segmento" name="segmento">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="porte">Porte da Empresa</label>
+                            <select id="porte" name="porte">
+                                <option value="">Selecione</option>
+                                <option value="MEI">MEI</option>
+                                <option value="Pequeno">Pequeno</option>
+                                <option value="Médio">Médio</option>
+                                <option value="Grande">Grande</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="num_funcionarios">Número de Funcionários</label>
+                            <input type="number" id="num_funcionarios" name="num_funcionarios">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email*</label>
                             <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group">
-                            <label for="telefone">Telefone</label>
+                            <label for="senha">Senha*</label>
+                            <input type="password" id="senha" name="senha" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone">Telefone*</label>
                             <input type="text" id="telefone" name="telefone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="celular">Celular</label>
+                            <input type="text" id="celular" name="celular">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="site">Site</label>
+                            <input type="url" id="site" name="site">
+                        </div>
+                        <div class="form-group">
+                            <label for="data_adesao">Data de Adesão</label>
+                            <input type="date" id="data_adesao" name="data_adesao">
                         </div>
                     </div>
 
                     <h4>Endereço</h4>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="cep">CEP</label>
+                            <label for="cep">CEP*</label>
                             <input type="text" id="cep" name="cep" required>
                         </div>
                         <div class="form-group">
                             <label for="logradouro">Logradouro</label>
-                            <input type="text" id="logradouro" name="logradouro" required>
+                            <input type="text" id="logradouro" name="logradouro">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="numero">Número</label>
-                            <input type="text" id="numero" name="numero" required>
+                            <input type="text" id="numero" name="numero">
                         </div>
                         <div class="form-group">
                             <label for="complemento">Complemento</label>
@@ -84,15 +145,53 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="bairro">Bairro</label>
-                            <input type="text" id="bairro" name="bairro" required>
+                            <input type="text" id="bairro" name="bairro">
                         </div>
                         <div class="form-group">
                             <label for="cidade">Cidade</label>
-                            <input type="text" id="cidade" name="cidade" required>
+                            <input type="text" id="cidade" name="cidade">
                         </div>
                         <div class="form-group">
                             <label for="estado">Estado</label>
-                            <input type="text" id="estado" name="estado" required>
+                            <input type="text" id="estado" name="estado">
+                        </div>
+                    </div>
+
+                    <h4>Dados Bancários</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="banco">Banco</label>
+                            <input type="text" id="banco" name="banco">
+                        </div>
+                        <div class="form-group">
+                            <label for="agencia">Agência</label>
+                            <input type="text" id="agencia" name="agencia">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="conta">Conta</label>
+                            <input type="text" id="conta" name="conta">
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo_conta">Tipo de Conta</label>
+                            <select id="tipo_conta" name="tipo_conta">
+                                <option value="">Selecione</option>
+                                <option value="Corrente">Corrente</option>
+                                <option value="Poupança">Poupança</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="favorecido">Favorecido</label>
+                            <input type="text" id="favorecido" name="favorecido">
+                        </div>
+                        <div class="form-group">
+                            <label for="cpf_cnpj_favorecido">CPF/CNPJ do Favorecido</label>
+                            <input type="text" id="cpf_cnpj_favorecido" name="cpf_cnpj_favorecido">
                         </div>
                     </div>
 

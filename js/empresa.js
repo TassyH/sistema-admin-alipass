@@ -131,10 +131,11 @@ function fetchAddressByCep(cep) {
 
 /**
  * Carrega os dados das empresas
- * Em um ambiente real, isso seria uma chamada para uma API
+ * Tenta carregar da API e, se não conseguir, usa o localStorage como fallback
  */
 function loadEmpresas() {
-    // Verifica se há dados salvos no localStorage
+    // Tenta carregar da API (implementação futura)
+    // Por enquanto, mantém o localStorage como fonte de dados
     const savedEmpresas = localStorage.getItem('alipass_empresas');
     if (savedEmpresas) {
         empresas = JSON.parse(savedEmpresas);
@@ -142,6 +143,9 @@ function loadEmpresas() {
     
     // Atualiza a tabela
     renderEmpresasTable();
+    
+    // Nota: Em uma implementação completa, aqui seria feita uma chamada para a API
+    // para obter a lista de empresas cadastradas
 }
 
 /**
@@ -163,11 +167,11 @@ function renderEmpresasTable() {
     empresas.forEach(empresa => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${empresa.nome}</td>
-            <td>${empresa.cnpj}</td>
-            <td>${empresa.email}</td>
-            <td>${empresa.telefone}</td>
-            <td>${empresa.cidade}/${empresa.estado}</td>
+            <td>${empresa.nome_fantasia || empresa.razao_social || ''}</td>
+            <td>${empresa.cnpj || ''}</td>
+            <td>${empresa.email || ''}</td>
+            <td>${empresa.telefone || ''}</td>
+            <td>${(empresa.cidade || '')}/${(empresa.estado || '')}</td>
             <td class="actions">
                 <button class="action-btn edit-btn" data-id="${empresa.id}" title="Editar">
                     ✏️
@@ -238,17 +242,34 @@ function saveEmpresa(event) {
     // Obtém os dados do formulário
     const formData = new FormData(empresaForm);
     const empresaData = {
-        nome: formData.get('nome'),
+        razao_social: formData.get('razao_social'),
+        nome_fantasia: formData.get('nome_fantasia'),
         cnpj: formData.get('cnpj'),
-        email: formData.get('email'),
-        telefone: formData.get('telefone'),
-        cep: formData.get('cep'),
+        inscricao_estadual: formData.get('inscricao_estadual'),
+        data_abertura: formData.get('data_abertura'),
+        segmento: formData.get('segmento'),
+        porte: formData.get('porte'),
         logradouro: formData.get('logradouro'),
         numero: formData.get('numero'),
         complemento: formData.get('complemento'),
         bairro: formData.get('bairro'),
         cidade: formData.get('cidade'),
-        estado: formData.get('estado')
+        estado: formData.get('estado'),
+        cep: formData.get('cep'),
+        telefone: formData.get('telefone'),
+        celular: formData.get('celular'),
+        email: formData.get('email'),
+        site: formData.get('site'),
+        num_funcionarios: formData.get('num_funcionarios'),
+        data_adesao: formData.get('data_adesao'),
+        senha: formData.get('senha'),
+        banco: formData.get('banco'),
+        agencia: formData.get('agencia'),
+        conta: formData.get('conta'),
+        tipo_conta: formData.get('tipo_conta'),
+        favorecido: formData.get('favorecido'),
+        cpf_cnpj_favorecido: formData.get('cpf_cnpj_favorecido'),
+        status: 1 // Status ativo por padrão
     };
     
     // Verifica se é uma edição ou novo cadastro
@@ -260,24 +281,65 @@ function saveEmpresa(event) {
         if (index !== -1) {
             empresaData.id = empresaId;
             empresas[index] = empresaData;
+            
+            // Salva no localStorage (temporário até implementar API de atualização)
+            localStorage.setItem('alipass_empresas', JSON.stringify(empresas));
+            
+            // Atualiza a tabela
+            renderEmpresasTable();
+            
+            // Esconde o formulário
+            hideEmpresaForm();
+            
+            // Exibe mensagem de sucesso
+            alert('Empresa atualizada com sucesso!');
         }
     } else {
-        // Nova empresa
-        empresaData.id = Date.now().toString(); // ID único baseado no timestamp
-        empresas.push(empresaData);
+        // Validação dos campos obrigatórios
+        if (!empresaData.razao_social || !empresaData.nome_fantasia || !empresaData.cnpj || 
+            !empresaData.email || !empresaData.senha || !empresaData.telefone || !empresaData.cep) {
+            alert("Preencha os campos obrigatórios: razão social, nome fantasia, CNPJ, email, senha, telefone e CEP.");
+            return;
+        }
+        
+        const targetUrl = 'http://localhost:3002/novo/empresa';
+        fetch(targetUrl, {
+           method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+             body: JSON.stringify(empresaData)
+          })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao cadastrar empresa');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Adiciona o ID retornado pela API
+            empresaData.id = data.empresaId;
+            
+            // Adiciona ao array local
+            empresas.push(empresaData);
+            
+            // Salva no localStorage (para manter a compatibilidade com o código existente)
+            localStorage.setItem('alipass_empresas', JSON.stringify(empresas));
+            
+            // Atualiza a tabela
+            renderEmpresasTable();
+            
+            // Esconde o formulário
+            hideEmpresaForm();
+            
+            // Exibe mensagem de sucesso
+            alert('Empresa cadastrada com sucesso!');
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao cadastrar empresa: ' + error.message);
+        });
     }
-    
-    // Salva no localStorage
-    localStorage.setItem('alipass_empresas', JSON.stringify(empresas));
-    
-    // Atualiza a tabela
-    renderEmpresasTable();
-    
-    // Esconde o formulário
-    hideEmpresaForm();
-    
-    // Exibe mensagem de sucesso
-    alert(empresaId ? 'Empresa atualizada com sucesso!' : 'Empresa cadastrada com sucesso!');
 }
 
 /**
@@ -288,17 +350,33 @@ function editEmpresa(id) {
     if (!empresa) return;
     
     // Preenche o formulário com os dados da empresa
-    document.getElementById('nome').value = empresa.nome;
-    document.getElementById('cnpj').value = empresa.cnpj;
-    document.getElementById('email').value = empresa.email;
-    document.getElementById('telefone').value = empresa.telefone;
-    document.getElementById('cep').value = empresa.cep;
-    document.getElementById('logradouro').value = empresa.logradouro;
-    document.getElementById('numero').value = empresa.numero;
+    document.getElementById('razao_social').value = empresa.razao_social || '';
+    document.getElementById('nome_fantasia').value = empresa.nome_fantasia || '';
+    document.getElementById('cnpj').value = empresa.cnpj || '';
+    document.getElementById('inscricao_estadual').value = empresa.inscricao_estadual || '';
+    document.getElementById('data_abertura').value = empresa.data_abertura || '';
+    document.getElementById('segmento').value = empresa.segmento || '';
+    document.getElementById('porte').value = empresa.porte || '';
+    document.getElementById('num_funcionarios').value = empresa.num_funcionarios || '';
+    document.getElementById('email').value = empresa.email || '';
+    document.getElementById('senha').value = empresa.senha || '';
+    document.getElementById('telefone').value = empresa.telefone || '';
+    document.getElementById('celular').value = empresa.celular || '';
+    document.getElementById('site').value = empresa.site || '';
+    document.getElementById('data_adesao').value = empresa.data_adesao || '';
+    document.getElementById('cep').value = empresa.cep || '';
+    document.getElementById('logradouro').value = empresa.logradouro || '';
+    document.getElementById('numero').value = empresa.numero || '';
     document.getElementById('complemento').value = empresa.complemento || '';
-    document.getElementById('bairro').value = empresa.bairro;
-    document.getElementById('cidade').value = empresa.cidade;
-    document.getElementById('estado').value = empresa.estado;
+    document.getElementById('bairro').value = empresa.bairro || '';
+    document.getElementById('cidade').value = empresa.cidade || '';
+    document.getElementById('estado').value = empresa.estado || '';
+    document.getElementById('banco').value = empresa.banco || '';
+    document.getElementById('agencia').value = empresa.agencia || '';
+    document.getElementById('conta').value = empresa.conta || '';
+    document.getElementById('tipo_conta').value = empresa.tipo_conta || '';
+    document.getElementById('favorecido').value = empresa.favorecido || '';
+    document.getElementById('cpf_cnpj_favorecido').value = empresa.cpf_cnpj_favorecido || '';
     
     // Define o ID no formulário para identificar que é uma edição
     empresaForm.setAttribute('data-id', id);
@@ -307,7 +385,7 @@ function editEmpresa(id) {
     empresaFormSection.classList.remove('hidden');
     
     // Foca no primeiro campo
-    document.getElementById('nome').focus();
+    document.getElementById('razao_social').focus();
 }
 
 /**
