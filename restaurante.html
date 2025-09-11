@@ -49,12 +49,76 @@
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <textarea id="descricao" name="descricao" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_tipo_cozinha">Tipo de Cozinha</label>
+                            <select id="id_tipo_cozinha" name="id_tipo_cozinha">
+                                <option value="">Selecione...</option>
+                                <option value="1">Brasileira</option>
+                                <option value="2">Italiana</option>
+                                <option value="3">Japonesa</option>
+                                <option value="4">Mexicana</option>
+                                <option value="5">Árabe</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tem_delivery">Oferece Delivery?</label>
+                            <select id="tem_delivery" name="tem_delivery">
+                                <option value="1">Sim</option>
+                                <option value="0">Não</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="horario_abertura">Horário de Abertura</label>
+                            <input type="time" id="horario_abertura" name="horario_abertura">
+                        </div>
+                        <div class="form-group">
+                            <label for="horario_fechamento">Horário de Fechamento</label>
+                            <input type="time" id="horario_fechamento" name="horario_fechamento">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
                             <label for="email">Email</label>
                             <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group">
+                            <label for="senha">Senha</label>
+                            <input type="password" id="senha" name="senha" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
                             <label for="telefone">Telefone</label>
                             <input type="text" id="telefone" name="telefone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="celular">Celular</label>
+                            <input type="text" id="celular" name="celular">
+                        </div>
+                        <div class="form-group">
+                            <label for="cel_whatsapp">WhatsApp?</label>
+                            <select id="cel_whatsapp" name="cel_whatsapp">
+                                <option value="1">Sim</option>
+                                <option value="0">Não</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="imagem_estabelecimento">Imagem do Estabelecimento</label>
+                            <input type="file" id="imagem_estabelecimento" name="imagem_estabelecimento" accept="image/*">
                         </div>
                     </div>
 
@@ -93,6 +157,44 @@
                         <div class="form-group">
                             <label for="estado">Estado</label>
                             <input type="text" id="estado" name="estado" required>
+                        </div>
+                    </div>
+
+                    <h4>Dados Bancários</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="banco">Banco</label>
+                            <input type="text" id="banco" name="banco">
+                        </div>
+                        <div class="form-group">
+                            <label for="agencia">Agência</label>
+                            <input type="text" id="agencia" name="agencia">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="conta">Conta</label>
+                            <input type="text" id="conta" name="conta">
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo_conta">Tipo de Conta</label>
+                            <select id="tipo_conta" name="tipo_conta">
+                                <option value="">Selecione...</option>
+                                <option value="corrente">Corrente</option>
+                                <option value="poupanca">Poupança</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome_titular">Nome do Titular</label>
+                            <input type="text" id="nome_titular" name="nome_titular">
+                        </div>
+                        <div class="form-group">
+                            <label for="cpf_cnpj">CPF/CNPJ do Titular</label>
+                            <input type="text" id="cpf_cnpj" name="cpf_cnpj">
                         </div>
                     </div>
 
