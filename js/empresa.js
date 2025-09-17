@@ -134,19 +134,70 @@ function fetchAddressByCep(cep) {
  * Tenta carregar da API e, se não conseguir, usa o localStorage como fallback
  */
 function loadEmpresas() {
-    // Tenta carregar da API (implementação futura)
-    // Por enquanto, mantém o localStorage como fonte de dados
-    const savedEmpresas = localStorage.getItem('alipass_empresas');
-    if (savedEmpresas) {
-        empresas = JSON.parse(savedEmpresas);
+     // Mostra loading
+        showLoading();
+        
+        // Faz requisição para a API
+        fetch('http://localhost:3002/empresas')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar empresas: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                empresas = data;
+                renderEmpresasTable();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Erro ao carregar empresas:', error);
+                // Fallback para localStorage caso a API falhe
+                const savedEmpresas = localStorage.getItem('alipass_empresas');
+                if (savedEmpresas) {
+                    empresas = JSON.parse(savedEmpresas);
+                    renderEmpresasTable();
+                    alert('Usando dados locais. API indisponível.');
+                }
+                hideLoading();
+            });
     }
-    
-    // Atualiza a tabela
-    renderEmpresasTable();
-    
-    // Nota: Em uma implementação completa, aqui seria feita uma chamada para a API
-    // para obter a lista de empresas cadastradas
-}
+
+    /**
+     * Mostra indicador de carregamento
+     */
+    function showLoading() {
+        // Cria ou mostra elemento de loading
+        let loadingElement = document.getElementById('loading-empresas');
+        if (!loadingElement) {
+            loadingElement = document.createElement('div');
+            loadingElement.id = 'loading-empresas';
+            loadingElement.innerHTML = 'Carregando empresas...';
+            loadingElement.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 5px;
+                z-index: 1000;
+            `;
+            document.body.appendChild(loadingElement);
+        }
+        loadingElement.style.display = 'block';
+    }
+
+    /**
+     * Esconde indicador de carregamento
+     */
+    function hideLoading() {
+        const loadingElement = document.getElementById('loading-empresas');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    }
 
 /**
  * Renderiza a tabela de empresas
