@@ -72,6 +72,9 @@ function setupEventListeners() {
             btnPreview.disabled = true;
             btnImport.disabled = true;
         }
+        
+        // Carrega os funcionários da empresa selecionada
+        loadFuncionarios();
     });
     
     // Evento de seleção de arquivo
@@ -108,33 +111,137 @@ function loadEmpresas() {
         empresaSelect.remove(1);
     }
     
-    // Obtém as empresas do localStorage
-    const savedEmpresas = localStorage.getItem('alipass_empresas');
-    if (savedEmpresas) {
-        const empresas = JSON.parse(savedEmpresas);
-        
-        // Adiciona as empresas ao select
-        empresas.forEach(empresa => {
-            const option = document.createElement('option');
-            option.value = empresa.id;
-            option.textContent = empresa.nome;
-            empresaSelect.appendChild(option);
-        });
-    }
+    // Mostra indicador de carregamento
+    showLoading('Carregando empresas...');
+    
+    // Faz requisição para a API
+    fetch('https://178.156.165.159:3002/empresas', {
+        mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao carregar empresas: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.empresas && data.empresas.length > 0) {
+            // Adiciona as empresas ao select
+            data.empresas.forEach(empresa => {
+                const option = document.createElement('option');
+                option.value = empresa.id;
+                option.textContent = empresa.nome_fantasia || empresa.razao_social;
+                empresaSelect.appendChild(option);
+            });
+        }
+        hideLoading();
+    })
+    .catch(error => {
+        console.error('Erro ao carregar empresas:', error);
+        // Fallback para localStorage caso a API falhe
+        const savedEmpresas = localStorage.getItem('alipass_empresas');
+        if (savedEmpresas) {
+            const empresas = JSON.parse(savedEmpresas);
+            
+            // Adiciona as empresas ao select
+            empresas.forEach(empresa => {
+                const option = document.createElement('option');
+                option.value = empresa.id;
+                option.textContent = empresa.nome_fantasia || empresa.razao_social;
+                empresaSelect.appendChild(option);
+            });
+            alert('Usando dados locais. API indisponível.');
+        }
+        hideLoading();
+    });
 }
 
 /**
- * Carrega os dados dos funcionários
+ * Mostra indicador de carregamento com mensagem personalizada
+ */
+function showLoading(message = 'Carregando...') {
+    loadingModal.classList.remove('hidden');
+    document.getElementById('loading-message').textContent = message;
+}
+
+/**
+ * Esconde indicador de carregamento
+ */
+function hideLoading() {
+    loadingModal.classList.add('hidden');
+}
+
+/**
+ * Carrega os dados dos funcionários da empresa selecionada
  */
 function loadFuncionarios() {
-    // Verifica se há dados salvos no localStorage
-    const savedFuncionarios = localStorage.getItem('alipass_funcionarios');
-    if (savedFuncionarios) {
-        funcionarios = JSON.parse(savedFuncionarios);
+    // Limpa a lista de funcionários
+    funcionarios = [];
+    
+    // Verifica se há uma empresa selecionada
+    const empresaId = empresaSelect.value;
+    if (!empresaId) {
+        renderFuncionariosTable();
+        return;
     }
     
-    // Atualiza a tabela
-    renderFuncionariosTable();
+    // Mostra indicador de carregamento
+    showLoading('Carregando funcionários...');
+    
+    // Faz requisição para a API
+    fetch(`https://178.156.165.159:3002/empresa/${empresaId}/funcionarios`, {
+        mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao carregar funcionários: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.funcionarios && Array.isArray(data.funcionarios)) {
+            // Mapeia os dados da API para o formato esperado pela aplicação
+            funcionarios = data.funcionarios.map(func => ({
+                id: func.id_funcionario,
+                nome: func.nome,
+                cpf: func.cpf,
+                email: func.email,
+                empresa: func.empresa_nome || getEmpresaNome(empresaId),
+                empresaId: empresaId,
+                cep: func.cep,
+                logradouro: func.logradouro,
+                numero: func.numero,
+                complemento: func.complemento,
+                bairro: func.bairro,
+                cidade: func.cidade,
+                estado: func.estado,
+                saldo: parseFloat(func.saldo) || 0,
+                telefone: func.celular || func.telefone, // Usando celular ou telefone
+                whatsapp: func.whatsapp ? 'Sim' : 'Não'
+            }));
+        }
+        
+        // Atualiza a tabela
+        renderFuncionariosTable();
+        hideLoading();
+    })
+    .catch(error => {
+        console.error('Erro ao carregar funcionários:', error);
+        // Fallback para localStorage caso a API falhe
+        const savedFuncionarios = localStorage.getItem('alipass_funcionarios');
+        if (savedFuncionarios) {
+            funcionarios = JSON.parse(savedFuncionarios);
+            // Filtra apenas os funcionários da empresa selecionada
+            if (empresaId) {
+                funcionarios = funcionarios.filter(f => f.empresaId == empresaId);
+            }
+            alert('Usando dados locais. API indisponível.');
+        }
+        
+        // Atualiza a tabela
+        renderFuncionariosTable();
+        hideLoading();
+    });
 }
 
 /**
@@ -459,13 +566,22 @@ function hideLoadingModal() {
 /**
  * Obtém o nome da empresa pelo ID
  */
-function getEmpresaNome(id) {
-    // Obtém as empresas do localStorage
+function getEmpresaNome(empresaId) {
+    // Verifica se há uma opção selecionada com esse ID no select
+    const option = empresaSelect.querySelector(`option[value="${empresaId}"]`);
+    if (option) {
+        return option.textContent;
+    }
+    
+    // Caso não encontre no select, tenta buscar no localStorage
     const savedEmpresas = localStorage.getItem('alipass_empresas');
     if (savedEmpresas) {
         const empresas = JSON.parse(savedEmpresas);
-        const empresa = empresas.find(e => e.id == id);
-        return empresa ? empresa.nome : 'Empresa não encontrada';
+        const empresa = empresas.find(e => e.id == empresaId);
+        if (empresa) {
+            return empresa.nome_fantasia || empresa.razao_social;
+        }
     }
+    
     return 'Empresa não encontrada';
 }

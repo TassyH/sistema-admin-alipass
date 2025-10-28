@@ -138,7 +138,9 @@ function loadEmpresas() {
         showLoading();
         
         // Faz requisição para a API
-        fetch('http://localhost:3002/empresas')
+        fetch('http://localhost:3002/empresas', {
+            mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erro ao carregar empresas: ' + response.status);
@@ -328,13 +330,42 @@ function saveEmpresa(event) {
     
     if (empresaId) {
         // Edição de empresa existente
-        const index = empresas.findIndex(e => e.id == empresaId);
-        if (index !== -1) {
-            empresaData.id = empresaId;
-            empresas[index] = empresaData;
-            
-            // Salva no localStorage (temporário até implementar API de atualização)
-            localStorage.setItem('alipass_empresas', JSON.stringify(empresas));
+        // Validação dos campos obrigatórios
+        if (!empresaData.razao_social || !empresaData.nome_fantasia || !empresaData.cnpj || 
+            !empresaData.email || !empresaData.senha || !empresaData.telefone || !empresaData.cep) {
+            alert("Preencha os campos obrigatórios: razão social, nome fantasia, CNPJ, email, senha, telefone e CEP.");
+            return;
+        }
+        
+        // Mostra loading
+        showLoading();
+        
+        // Faz requisição para a API de atualização
+        // Nota: A API usa idEmpresa como parâmetro na URL
+        fetch(`http://localhost:3002/admin/empresa/editar-cadastro/${empresaId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(empresaData),
+            mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar empresa: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Atualiza o objeto no array local
+            const index = empresas.findIndex(e => e.id == empresaId);
+            if (index !== -1) {
+                empresaData.id = empresaId;
+                empresas[index] = empresaData;
+                
+                // Salva no localStorage (para manter a compatibilidade com o código existente)
+                localStorage.setItem('alipass_empresas', JSON.stringify(empresas));
+            }
             
             // Atualiza a tabela
             renderEmpresasTable();
@@ -342,9 +373,17 @@ function saveEmpresa(event) {
             // Esconde o formulário
             hideEmpresaForm();
             
+            // Esconde loading
+            hideLoading();
+            
             // Exibe mensagem de sucesso
             alert('Empresa atualizada com sucesso!');
-        }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao atualizar empresa: ' + error.message);
+            hideLoading();
+        })
     } else {
         // Validação dos campos obrigatórios
         if (!empresaData.razao_social || !empresaData.nome_fantasia || !empresaData.cnpj || 
@@ -354,12 +393,17 @@ function saveEmpresa(event) {
         }
         
         const targetUrl = 'http://localhost:3002/novo/empresa';
+        
+        // Mostra loading
+        showLoading();
+        
         fetch(targetUrl, {
            method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-             body: JSON.stringify(empresaData)
+             body: JSON.stringify(empresaData),
+             mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
           })
         .then(response => {
             if (!response.ok) {
@@ -383,12 +427,16 @@ function saveEmpresa(event) {
             // Esconde o formulário
             hideEmpresaForm();
             
+            // Esconde loading
+            hideLoading();
+            
             // Exibe mensagem de sucesso
             alert('Empresa cadastrada com sucesso!');
         })
         .catch(error => {
             console.error('Erro:', error);
             alert('Erro ao cadastrar empresa: ' + error.message);
+            hideLoading();
         });
     }
 }
