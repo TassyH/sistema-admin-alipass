@@ -3,10 +3,8 @@
  * Inclui funcionalidades para importação de planilhas
  */
 
-// Array para armazenar os dados dos funcionários (simulação de banco de dados)
 let funcionarios = [];
 
-// Array para armazenar os dados da pré-visualização da planilha
 let previewData = [];
 
 // Elementos do DOM
@@ -24,18 +22,10 @@ let noFuncionariosMessage;
 let loadingModal;
 let resultModal;
 
-// Inicialização quando o documento estiver pronto
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializa elementos do DOM
     initElements();
-    
-    // Configura eventos
     setupEventListeners();
-    
-    // Carrega dados das empresas para o select
     loadEmpresas();
-    
-    // Carrega dados dos funcionários
     loadFuncionarios();
 });
 
@@ -62,9 +52,7 @@ function initElements() {
  * Configura os listeners de eventos
  */
 function setupEventListeners() {
-    // Evento de mudança no select de empresas
     empresaSelect.addEventListener('change', function() {
-        // Habilita ou desabilita o upload de arquivo conforme seleção de empresa
         fileUpload.disabled = !this.value;
         if (!this.value) {
             fileUpload.value = '';
@@ -73,11 +61,9 @@ function setupEventListeners() {
             btnImport.disabled = true;
         }
         
-        // Carrega os funcionários da empresa selecionada
         loadFuncionarios();
     });
     
-    // Evento de seleção de arquivo
     fileUpload.addEventListener('change', function() {
         if (this.files.length > 0) {
             const file = this.files[0];
@@ -90,14 +76,9 @@ function setupEventListeners() {
         }
     });
     
-    // Botão de pré-visualização
     btnPreview.addEventListener('click', previewFile);
-    
-    // Botão de importação
     btnImport.addEventListener('click', importFile);
-    
-    // Botão para fechar o modal de resultado
-    document.getElementById('btn-close-result').addEventListener('click', function() {
+        document.getElementById('btn-close-result').addEventListener('click', function() {
         resultModal.classList.add('hidden');
     });
 }
@@ -106,17 +87,14 @@ function setupEventListeners() {
  * Carrega as empresas cadastradas para o select
  */
 function loadEmpresas() {
-    // Limpa as opções existentes, mantendo apenas a opção padrão
     while (empresaSelect.options.length > 1) {
         empresaSelect.remove(1);
     }
     
-    // Mostra indicador de carregamento
-    showLoading('Carregando empresas...');
+
     
-    // Faz requisição para a API
-    fetch('https://178.156.165.159:3002/empresas', {
-        mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
+    fetch('http://localhost:3002/admin/empresas', {
+        mode: 'cors' 
     })
     .then(response => {
         if (!response.ok) {
@@ -138,7 +116,6 @@ function loadEmpresas() {
     })
     .catch(error => {
         console.error('Erro ao carregar empresas:', error);
-        // Fallback para localStorage caso a API falhe
         const savedEmpresas = localStorage.getItem('alipass_empresas');
         if (savedEmpresas) {
             const empresas = JSON.parse(savedEmpresas);
@@ -175,7 +152,6 @@ function hideLoading() {
  * Carrega os dados dos funcionários da empresa selecionada
  */
 function loadFuncionarios() {
-    // Limpa a lista de funcionários
     funcionarios = [];
     
     // Verifica se há uma empresa selecionada
@@ -188,9 +164,8 @@ function loadFuncionarios() {
     // Mostra indicador de carregamento
     showLoading('Carregando funcionários...');
     
-    // Faz requisição para a API
-    fetch(`https://178.156.165.159:3002/empresa/${empresaId}/funcionarios`, {
-        mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
+    fetch(`http://localhost:3002/empresa/${empresaId}/funcionarios`, {
+        mode: 'cors' 
     })
     .then(response => {
         if (!response.ok) {
@@ -200,7 +175,6 @@ function loadFuncionarios() {
     })
     .then(data => {
         if (data && data.funcionarios && Array.isArray(data.funcionarios)) {
-            // Mapeia os dados da API para o formato esperado pela aplicação
             funcionarios = data.funcionarios.map(func => ({
                 id: func.id_funcionario,
                 nome: func.nome,
@@ -216,29 +190,24 @@ function loadFuncionarios() {
                 cidade: func.cidade,
                 estado: func.estado,
                 saldo: parseFloat(func.saldo) || 0,
-                telefone: func.celular || func.telefone, // Usando celular ou telefone
-                whatsapp: func.whatsapp ? 'Sim' : 'Não'
+                telefone: func.celular || func.telefone, 
             }));
         }
         
-        // Atualiza a tabela
         renderFuncionariosTable();
         hideLoading();
     })
     .catch(error => {
         console.error('Erro ao carregar funcionários:', error);
-        // Fallback para localStorage caso a API falhe
         const savedFuncionarios = localStorage.getItem('alipass_funcionarios');
         if (savedFuncionarios) {
             funcionarios = JSON.parse(savedFuncionarios);
-            // Filtra apenas os funcionários da empresa selecionada
             if (empresaId) {
                 funcionarios = funcionarios.filter(f => f.empresaId == empresaId);
             }
             alert('Usando dados locais. API indisponível.');
         }
         
-        // Atualiza a tabela
         renderFuncionariosTable();
         hideLoading();
     });
@@ -288,17 +257,14 @@ function previewFile() {
     const file = fileUpload.files[0];
     const fileExtension = file.name.split('.').pop().toLowerCase();
     
-    // Verifica se o formato do arquivo é suportado
     if (!['csv', 'xlsx', 'xls'].includes(fileExtension)) {
         alert('Formato de arquivo não suportado. Por favor, selecione um arquivo .csv, .xlsx ou .xls.');
         return;
     }
     
-    // Mostra o modal de carregamento
     loadingModal.classList.remove('hidden');
     document.getElementById('loading-message').textContent = 'Processando planilha...';
     
-    // Processa o arquivo conforme o tipo
     if (fileExtension === 'csv') {
         processCSV(file);
     } else {
@@ -316,7 +282,6 @@ function processCSV(file) {
         const contents = e.target.result;
         const lines = contents.split('\n');
         
-        // Assume que a primeira linha contém os cabeçalhos
         const headers = lines[0].split(',').map(header => header.trim());
         
         // Mapeia os índices das colunas esperadas

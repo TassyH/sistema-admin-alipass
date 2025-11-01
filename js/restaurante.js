@@ -184,7 +184,7 @@ function fetchAddressByCep(cep) {
 async function loadRestaurantes() {
     try {
         // Tenta buscar os restaurantes da API
-        const response = await fetch('https://api.alipass.com.br/restaurantes', {
+        const response = await fetch('http://localhost:3002/restaurantes', {
             method: 'GET',
             mode: 'cors' // Importante para lidar com problemas de CORS
         });
