@@ -1,13 +1,8 @@
-/**
- * Script para a página de gerenciamento de funcionários
- * Inclui funcionalidades para importação de planilhas
- */
+
 
 let funcionarios = [];
-
 let previewData = [];
 
-// Elementos do DOM
 let empresaSelect;
 let fileUpload;
 let fileInfo;
@@ -29,9 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadFuncionarios();
 });
 
-/**
- * Inicializa referências aos elementos do DOM
- */
+
 function initElements() {
     empresaSelect = document.getElementById('empresa-select');
     fileUpload = document.getElementById('file-upload');
@@ -48,9 +41,7 @@ function initElements() {
     resultModal = document.getElementById('result-modal');
 }
 
-/**
- * Configura os listeners de eventos
- */
+
 function setupEventListeners() {
     empresaSelect.addEventListener('change', function() {
         fileUpload.disabled = !this.value;
@@ -60,7 +51,6 @@ function setupEventListeners() {
             btnPreview.disabled = true;
             btnImport.disabled = true;
         }
-        
         loadFuncionarios();
     });
     
@@ -78,157 +68,117 @@ function setupEventListeners() {
     
     btnPreview.addEventListener('click', previewFile);
     btnImport.addEventListener('click', importFile);
-        document.getElementById('btn-close-result').addEventListener('click', function() {
+    document.getElementById('btn-close-result').addEventListener('click', function() {
         resultModal.classList.add('hidden');
     });
 }
 
-/**
- * Carrega as empresas cadastradas para o select
- */
+
 function loadEmpresas() {
     while (empresaSelect.options.length > 1) {
         empresaSelect.remove(1);
     }
-    
 
-    
-    fetch('http://localhost:3002/admin/empresas', {
-        mode: 'cors' 
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erro ao carregar empresas: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data && data.empresas && data.empresas.length > 0) {
-            // Adiciona as empresas ao select
-            data.empresas.forEach(empresa => {
-                const option = document.createElement('option');
-                option.value = empresa.id;
-                option.textContent = empresa.nome_fantasia || empresa.razao_social;
-                empresaSelect.appendChild(option);
-            });
-        }
-        hideLoading();
-    })
-    .catch(error => {
-        console.error('Erro ao carregar empresas:', error);
-        const savedEmpresas = localStorage.getItem('alipass_empresas');
-        if (savedEmpresas) {
-            const empresas = JSON.parse(savedEmpresas);
-            
-            // Adiciona as empresas ao select
-            empresas.forEach(empresa => {
-                const option = document.createElement('option');
-                option.value = empresa.id;
-                option.textContent = empresa.nome_fantasia || empresa.razao_social;
-                empresaSelect.appendChild(option);
-            });
-            alert('Usando dados locais. API indisponível.');
-        }
-        hideLoading();
-    });
+    fetch('http://localhost:3002/admin/empresas', { mode: 'cors' })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao carregar empresas: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            if (data?.empresas?.length) {
+                data.empresas.forEach(empresa => {
+                    const option = document.createElement('option');
+                    option.value = empresa.id;
+                    option.textContent = empresa.nome_fantasia || empresa.razao_social;
+                    empresaSelect.appendChild(option);
+                });
+            }
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar empresas:', error);
+            const savedEmpresas = localStorage.getItem('alipass_empresas');
+            if (savedEmpresas) {
+                const empresas = JSON.parse(savedEmpresas);
+                empresas.forEach(empresa => {
+                    const option = document.createElement('option');
+                    option.value = empresa.id;
+                    option.textContent = empresa.nome_fantasia || empresa.razao_social;
+                    empresaSelect.appendChild(option);
+                });
+                alert('Usando dados locais. API indisponível.');
+            }
+            hideLoading();
+        });
 }
 
-/**
- * Mostra indicador de carregamento com mensagem personalizada
- */
+
 function showLoading(message = 'Carregando...') {
     loadingModal.classList.remove('hidden');
     document.getElementById('loading-message').textContent = message;
 }
 
-/**
- * Esconde indicador de carregamento
- */
 function hideLoading() {
     loadingModal.classList.add('hidden');
 }
 
-/**
- * Carrega os dados dos funcionários da empresa selecionada
- */
+
 function loadFuncionarios() {
     funcionarios = [];
-    
-    // Verifica se há uma empresa selecionada
     const empresaId = empresaSelect.value;
+
     if (!empresaId) {
         renderFuncionariosTable();
         return;
     }
-    
-    // Mostra indicador de carregamento
+
     showLoading('Carregando funcionários...');
-    
-    fetch(`http://localhost:3002/empresa/${empresaId}/funcionarios`, {
-        mode: 'cors' 
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erro ao carregar funcionários: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data && data.funcionarios && Array.isArray(data.funcionarios)) {
-            funcionarios = data.funcionarios.map(func => ({
-                id: func.id_funcionario,
-                nome: func.nome,
-                cpf: func.cpf,
-                email: func.email,
-                empresa: func.empresa_nome || getEmpresaNome(empresaId),
-                empresaId: empresaId,
-                cep: func.cep,
-                logradouro: func.logradouro,
-                numero: func.numero,
-                complemento: func.complemento,
-                bairro: func.bairro,
-                cidade: func.cidade,
-                estado: func.estado,
-                saldo: parseFloat(func.saldo) || 0,
-                telefone: func.celular || func.telefone, 
-            }));
-        }
-        
-        renderFuncionariosTable();
-        hideLoading();
-    })
-    .catch(error => {
-        console.error('Erro ao carregar funcionários:', error);
-        const savedFuncionarios = localStorage.getItem('alipass_funcionarios');
-        if (savedFuncionarios) {
-            funcionarios = JSON.parse(savedFuncionarios);
-            if (empresaId) {
-                funcionarios = funcionarios.filter(f => f.empresaId == empresaId);
+
+    fetch(`http://localhost:3002/empresa/${empresaId}/funcionarios`, { mode: 'cors' })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao carregar funcionários: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            if (Array.isArray(data.funcionarios)) {
+                funcionarios = data.funcionarios.map(func => ({
+                    id: func.id_funcionario,
+                    nome: func.nome,
+                    cpf: func.cpf,
+                    email: func.email,
+                    empresa: func.empresa_nome || getEmpresaNome(empresaId),
+                    empresaId: empresaId,
+                    cep: func.cep,
+                    cidade: func.cidade,
+                    bairro: func.bairro,
+                    saldo: parseFloat(func.saldo) || 0,
+                    celular: func.celular,
+                    whatsapp: func.whatsapp
+                }));
             }
-            alert('Usando dados locais. API indisponível.');
-        }
-        
-        renderFuncionariosTable();
-        hideLoading();
-    });
+            renderFuncionariosTable();
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar funcionários:', error);
+            hideLoading();
+        });
 }
 
-/**
- * Renderiza a tabela de funcionários
- */
+
 function renderFuncionariosTable() {
     const tbody = funcionariosTable.querySelector('tbody');
     tbody.innerHTML = '';
-    
+
     if (funcionarios.length === 0) {
         funcionariosSection.classList.add('hidden');
         noFuncionariosMessage.classList.remove('hidden');
         return;
     }
-    
+
     funcionariosSection.classList.remove('hidden');
     noFuncionariosMessage.classList.add('hidden');
-    
+
     funcionarios.forEach(funcionario => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -240,51 +190,46 @@ function renderFuncionariosTable() {
             <td>${funcionario.cidade}</td>
             <td>${funcionario.bairro}</td>
             <td>R$ ${funcionario.saldo.toFixed(2)}</td>
-            <td>${funcionario.telefone}</td>
-            <td>${funcionario.whatsapp}</td>
+            <td>${funcionario.celular}</td>
+            <td>${funcionario.whatsapp || '-'}</td>
+            <td class="actions">
+                <button class="action-btn toggle-status-btn" data-id="${funcionario.id}" data-status="${funcionario.ativo || 1}" title="${(funcionario.ativo || 1) == 1 ? 'Desativar' : 'Ativar'}">
+                    ${(funcionario.ativo || 1) == 1 ? '🟢' : '🔴'}
+                </button>
+            </td>
         `;
-        
         tbody.appendChild(tr);
     });
+    
+    addActionButtonsEvents();
 }
 
-/**
- * Pré-visualiza o arquivo selecionado
- */
+
 function previewFile() {
     if (!fileUpload.files.length) return;
-    
+
     const file = fileUpload.files[0];
     const fileExtension = file.name.split('.').pop().toLowerCase();
-    
+
     if (!['csv', 'xlsx', 'xls'].includes(fileExtension)) {
-        alert('Formato de arquivo não suportado. Por favor, selecione um arquivo .csv, .xlsx ou .xls.');
+        alert('Formato de arquivo não suportado. Selecione um arquivo .csv, .xlsx ou .xls.');
         return;
     }
-    
-    loadingModal.classList.remove('hidden');
-    document.getElementById('loading-message').textContent = 'Processando planilha...';
-    
-    if (fileExtension === 'csv') {
-        processCSV(file);
-    } else {
-        processExcel(file);
-    }
+
+    showLoading('Processando planilha...');
+
+    if (fileExtension === 'csv') processCSV(file);
+    else processExcel(file);
 }
 
-/**
- * Processa arquivo CSV
- */
+
 function processCSV(file) {
     const reader = new FileReader();
-    
+
     reader.onload = function(e) {
-        const contents = e.target.result;
-        const lines = contents.split('\n');
-        
-        const headers = lines[0].split(',').map(header => header.trim());
-        
-        // Mapeia os índices das colunas esperadas
+        const lines = e.target.result.split('\n').map(line => line.trim()).filter(Boolean);
+        const headers = lines[0].split(',').map(h => h.trim());
+
         const indices = {
             nome: headers.indexOf('Nome'),
             cpf: headers.indexOf('CPF'),
@@ -293,81 +238,48 @@ function processCSV(file) {
             cidade: headers.indexOf('Cidade'),
             bairro: headers.indexOf('Bairro'),
             saldo: headers.indexOf('Saldo'),
-            telefone: headers.indexOf('Telefone'),
+            celular: headers.indexOf('Celular'),
             whatsapp: headers.indexOf('WhatsApp')
         };
-        
-        // Verifica se todas as colunas necessárias existem
-        const missingColumns = Object.entries(indices)
-            .filter(([_, index]) => index === -1)
-            .map(([key, _]) => key);
-        
-        if (missingColumns.length > 0) {
-            hideLoadingModal();
-            alert(`As seguintes colunas estão faltando na planilha: ${missingColumns.join(', ')}`);
-            return;
-        }
-        
-        // Processa as linhas de dados
+
         previewData = [];
+
         for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue; // Pula linhas vazias
-            
-            const values = lines[i].split(',').map(value => value.trim());
-            
-            // Cria o objeto de funcionário
-            const funcionario = {
-                nome: values[indices.nome],
-                cpf: values[indices.cpf],
-                email: values[indices.email],
+            const cols = lines[i].split(',');
+            if (!cols[indices.nome]) continue;
+
+            previewData.push({
+                nome: cols[indices.nome],
+                cpf: cols[indices.cpf],
+                email: cols[indices.email],
                 empresa: getEmpresaNome(empresaSelect.value),
                 empresaId: empresaSelect.value,
-                cep: values[indices.cep],
-                cidade: values[indices.cidade],
-                bairro: values[indices.bairro],
-                saldo: parseFloat(values[indices.saldo]) || 0,
-                telefone: values[indices.telefone],
-                whatsapp: values[indices.whatsapp]
-            };
-            
-            previewData.push(funcionario);
+                cep: cols[indices.cep],
+                cidade: cols[indices.cidade],
+                bairro: cols[indices.bairro],
+                saldo: parseFloat(cols[indices.saldo]) || 0,
+                celular: cols[indices.celular],
+                whatsapp: cols[indices.whatsapp]
+            });
         }
-        
-        // Atualiza a tabela de pré-visualização
+
         renderPreviewTable();
-        hideLoadingModal();
+        hideLoading();
     };
-    
-    reader.onerror = function() {
-        hideLoadingModal();
-        alert('Erro ao ler o arquivo.');
-    };
-    
+
     reader.readAsText(file);
 }
 
-/**
- * Processa arquivo Excel (XLSX/XLS)
- */
 function processExcel(file) {
     const reader = new FileReader();
-    
+
     reader.onload = function(e) {
         try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            
-            // Assume que queremos a primeira planilha
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            
-            // Converte para JSON
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            
-            // Assume que a primeira linha contém os cabeçalhos
+            const workbook = XLSX.read(e.target.result, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
             const headers = jsonData[0];
-            
-            // Mapeia os índices das colunas esperadas
+
             const indices = {
                 nome: headers.indexOf('Nome'),
                 cpf: headers.indexOf('CPF'),
@@ -376,29 +288,17 @@ function processExcel(file) {
                 cidade: headers.indexOf('Cidade'),
                 bairro: headers.indexOf('Bairro'),
                 saldo: headers.indexOf('Saldo'),
-                telefone: headers.indexOf('Telefone'),
+                celular: headers.indexOf('Celular'),
                 whatsapp: headers.indexOf('WhatsApp')
             };
-            
-            // Verifica se todas as colunas necessárias existem
-            const missingColumns = Object.entries(indices)
-                .filter(([_, index]) => index === -1)
-                .map(([key, _]) => key);
-            
-            if (missingColumns.length > 0) {
-                hideLoadingModal();
-                alert(`As seguintes colunas estão faltando na planilha: ${missingColumns.join(', ')}`);
-                return;
-            }
-            
-            // Processa as linhas de dados
+
             previewData = [];
+
             for (let i = 1; i < jsonData.length; i++) {
                 const row = jsonData[i];
-                if (!row || row.length === 0) continue; // Pula linhas vazias
-                
-                // Cria o objeto de funcionário
-                const funcionario = {
+                if (!row || !row[indices.nome]) continue;
+
+                previewData.push({
                     nome: row[indices.nome],
                     cpf: row[indices.cpf],
                     email: row[indices.email],
@@ -408,145 +308,168 @@ function processExcel(file) {
                     cidade: row[indices.cidade],
                     bairro: row[indices.bairro],
                     saldo: parseFloat(row[indices.saldo]) || 0,
-                    telefone: row[indices.telefone],
+                    celular: row[indices.celular],
                     whatsapp: row[indices.whatsapp]
-                };
-                
-                previewData.push(funcionario);
+                });
             }
-            
-            // Atualiza a tabela de pré-visualização
+
             renderPreviewTable();
-            hideLoadingModal();
-            
+            hideLoading();
         } catch (error) {
-            console.error('Erro ao processar arquivo Excel:', error);
-            hideLoadingModal();
-            alert('Erro ao processar o arquivo Excel.');
+            console.error('Erro ao processar Excel:', error);
+            hideLoading();
+            alert('Erro ao processar arquivo Excel.');
         }
     };
-    
-    reader.onerror = function() {
-        hideLoadingModal();
-        alert('Erro ao ler o arquivo.');
-    };
-    
+
     reader.readAsArrayBuffer(file);
 }
 
-/**
- * Renderiza a tabela de pré-visualização
- */
+
 function renderPreviewTable() {
     const tbody = previewTable.querySelector('tbody');
     tbody.innerHTML = '';
-    
+
     if (previewData.length === 0) {
         previewSection.classList.add('hidden');
         noPreviewMessage.classList.remove('hidden');
         btnImport.disabled = true;
         return;
     }
-    
+
     previewSection.classList.remove('hidden');
     noPreviewMessage.classList.add('hidden');
     btnImport.disabled = false;
-    
-    previewData.forEach(funcionario => {
+
+    previewData.forEach(func => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${funcionario.nome}</td>
-            <td>${funcionario.cpf}</td>
-            <td>${funcionario.email}</td>
-            <td>${funcionario.empresa}</td>
-            <td>${funcionario.cep}</td>
-            <td>${funcionario.cidade}</td>
-            <td>${funcionario.bairro}</td>
-            <td>R$ ${funcionario.saldo.toFixed(2)}</td>
-            <td>${funcionario.telefone}</td>
-            <td>${funcionario.whatsapp}</td>
+            <td>${func.nome}</td>
+            <td>${func.cpf}</td>
+            <td>${func.email}</td>
+            <td>${func.empresa}</td>
+            <td>${func.cep}</td>
+            <td>${func.cidade}</td>
+            <td>${func.bairro}</td>
+            <td>R$ ${func.saldo.toFixed(2)}</td>
+            <td>${func.celular}</td>
+            <td>${func.whatsapp || '-'}</td>
         `;
-        
         tbody.appendChild(tr);
     });
 }
 
-/**
- * Importa os dados da pré-visualização
- */
-function importFile() {
-    if (previewData.length === 0) {
-        alert('Não há dados para importar.');
+
+async function importFile() {
+    if (!previewData.length) {
+        alert('Nenhum dado para importar.');
         return;
     }
-    
-    // Mostra o modal de carregamento
-    loadingModal.classList.remove('hidden');
-    document.getElementById('loading-message').textContent = 'Importando dados...';
-    
-    // Simula uma chamada de API (em um ambiente real, isso seria uma requisição AJAX)
-    setTimeout(() => {
-        // Adiciona IDs aos funcionários
-        previewData.forEach(funcionario => {
-            funcionario.id = Date.now().toString() + Math.floor(Math.random() * 1000);
+
+    const empresaId = empresaSelect.value;
+    if (!empresaId) {
+        alert('Selecione uma empresa antes de importar.');
+        return;
+    }
+
+    showLoading('Importando dados...');
+
+    try {
+        const response = await fetch(`http://localhost:3002/empresa/${empresaId}/funcionarios/importar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ funcionarios: previewData })
         });
-        
-        // Adiciona os funcionários ao array
-        funcionarios = [...funcionarios, ...previewData];
-        
-        // Salva no localStorage
-        localStorage.setItem('alipass_funcionarios', JSON.stringify(funcionarios));
-        
-        // Atualiza a tabela de funcionários
-        renderFuncionariosTable();
-        
-        // Esconde o modal de carregamento
-        hideLoadingModal();
-        
-        // Mostra o modal de resultado
-        document.getElementById('result-title').textContent = 'Importação Concluída';
-        document.getElementById('result-message').textContent = 
-            `${previewData.length} funcionários foram importados com sucesso.`;
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.mensagem || 'Erro ao importar.');
+
+        loadFuncionarios();
+        hideLoading();
+
+        document.getElementById('result-title').textContent = 'Importação concluída';
+        document.getElementById('result-message').textContent = `${data.importados || previewData.length} funcionários importados com sucesso.`;
         resultModal.classList.remove('hidden');
-        
-        // Limpa a pré-visualização
+
         previewData = [];
         previewSection.classList.add('hidden');
-        
-        // Reseta o formulário
         fileUpload.value = '';
         fileInfo.textContent = 'Nenhum arquivo selecionado';
         btnPreview.disabled = true;
         btnImport.disabled = true;
-    }, 1500); // Simula um atraso de 1.5 segundos para a chamada da API
-}
-
-/**
- * Esconde o modal de carregamento
- */
-function hideLoadingModal() {
-    loadingModal.classList.add('hidden');
-}
-
-/**
- * Obtém o nome da empresa pelo ID
- */
-function getEmpresaNome(empresaId) {
-    // Verifica se há uma opção selecionada com esse ID no select
-    const option = empresaSelect.querySelector(`option[value="${empresaId}"]`);
-    if (option) {
-        return option.textContent;
+    } catch (error) {
+        console.error('Erro ao importar funcionários:', error);
+        hideLoading();
+        alert('Erro ao importar: ' + error.message);
     }
-    
-    // Caso não encontre no select, tenta buscar no localStorage
+}
+
+
+function getEmpresaNome(empresaId) {
+    const option = empresaSelect.querySelector(`option[value="${empresaId}"]`);
+    if (option) return option.textContent;
+
     const savedEmpresas = localStorage.getItem('alipass_empresas');
     if (savedEmpresas) {
-        const empresas = JSON.parse(savedEmpresas);
-        const empresa = empresas.find(e => e.id == empresaId);
-        if (empresa) {
-            return empresa.nome_fantasia || empresa.razao_social;
-        }
+        const empresa = JSON.parse(savedEmpresas).find(e => e.id == empresaId);
+        if (empresa) return empresa.nome_fantasia || empresa.razao_social;
+    }
+    return 'Empresa não encontrada';
+}
+
+function addActionButtonsEvents() {
+    const toggleStatusButtons = document.querySelectorAll('.toggle-status-btn');
+    toggleStatusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const status = this.getAttribute('data-status');
+            toggleFuncionarioStatus(id, status);
+        });
+    });
+}
+
+
+function toggleFuncionarioStatus(id, currentStatus) {
+    const funcionario = funcionarios.find(f => f.id == id);
+    if (!funcionario) return;
+    
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    const action = newStatus == 0 ? 'desativar' : 'ativar';
+    
+    if (!confirm(`Tem certeza que deseja ${action} este funcionário?`)) {
+        return;
     }
     
-    return 'Empresa não encontrada';
+    showLoading();
+    
+    fetch(`http://localhost:3002/admin/funcionario/desativar/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        mode: 'cors'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erro ao ${action} funcionário: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        funcionario.ativo = newStatus;
+        
+        localStorage.setItem('alipass_funcionarios', JSON.stringify(funcionarios));
+        
+        renderFuncionariosTable();
+        
+        hideLoading();
+        
+        alert(`Funcionário ${action}do com sucesso!`);
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert(`Erro ao ${action} funcionário: ${error.message}`);
+        hideLoading();
+    });
 }

@@ -229,9 +229,10 @@ function renderEmpresasTable() {
                 <button class="action-btn edit-btn" data-id="${empresa.id}" title="Editar">
                     ✏️
                 </button>
-                <button class="action-btn delete-btn" data-id="${empresa.id}" title="Excluir">
-                    🗑️
+                <button class="action-btn toggle-status-btn" data-id="${empresa.id}" data-status="${empresa.status}" title="${empresa.status == 1 ? 'Desativar' : 'Ativar'}">
+                    ${empresa.status == 1 ? '🟢':'🔴'}
                 </button>
+            
             </td>
         `;
         
@@ -261,6 +262,16 @@ function addActionButtonsEvents() {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             showDeleteModal(id);
+        });
+    });
+    
+    // Botões de desativar/ativar
+    const toggleStatusButtons = document.querySelectorAll('.toggle-status-btn');
+    toggleStatusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const status = this.getAttribute('data-status');
+            toggleEmpresaStatus(id, status);
         });
     });
 }
@@ -523,4 +534,58 @@ function confirmDeleteEmpresa() {
     
     // Exibe mensagem de sucesso
     alert('Empresa excluída com sucesso!');
+}
+
+/**
+ * Desativa ou ativa uma empresa
+ */
+function toggleEmpresaStatus(id, currentStatus) {
+    const empresa = empresas.find(e => e.id == id);
+    if (!empresa) return;
+    
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    const action = newStatus == 0 ? 'desativar' : 'ativar';
+    
+    if (!confirm(`Tem certeza que deseja ${action} esta empresa?`)) {
+        return;
+    }
+    
+    // Mostra loading
+    showLoading();
+    
+    // Faz requisição para a API de desativação
+    fetch(`http://localhost:3002/admin/empresa/desativar/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        mode: 'cors'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erro ao ${action} empresa: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Atualiza o status da empresa no array local
+        empresa.status = newStatus;
+        
+        // Salva no localStorage
+        localStorage.setItem('alipass_empresas', JSON.stringify(empresas));
+        
+        // Atualiza a tabela
+        renderEmpresasTable();
+        
+        // Esconde loading
+        hideLoading();
+        
+        // Exibe mensagem de sucesso
+        alert(`Empresa ${action}da com sucesso!`);
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert(`Erro ao ${action} empresa: ${error.message}`);
+        hideLoading();
+    });
 }

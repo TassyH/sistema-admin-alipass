@@ -280,8 +280,8 @@ function renderRestaurantesTable() {
                 <button class="action-btn edit-btn" data-id="${restaurante.id}" title="Editar">
                     ✏️
                 </button>
-                <button class="action-btn delete-btn" data-id="${restaurante.id}" title="Excluir">
-                    🗑️
+                <button class="action-btn toggle-status-btn" data-id="${restaurante.id}" data-status="${restaurante.ativo}" title="${restaurante.ativo == 1 ? 'Desativar' : 'Ativar'}">
+                    ${restaurante.ativo == 1 ? '🔴':'🟢'}
                 </button>
             </td>
         `;
@@ -312,6 +312,16 @@ function addActionButtonsEvents() {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             showDeleteModal(id);
+        });
+    });
+    
+    // Botões de desativar/ativar
+    const toggleStatusButtons = document.querySelectorAll('.toggle-status-btn');
+    toggleStatusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const status = this.getAttribute('data-status');
+            toggleRestauranteStatus(id, status);
         });
     });
 }
@@ -576,4 +586,58 @@ function confirmDeleteRestaurante() {
     
     // Exibe mensagem de sucesso
     alert('Restaurante excluído com sucesso!');
+}
+
+/**
+ * Desativa ou ativa um restaurante
+ */
+function toggleRestauranteStatus(id, currentStatus) {
+    const restaurante = restaurantes.find(r => r.id == id);
+    if (!restaurante) return;
+    
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    const action = newStatus == 0 ? 'desativar' : 'ativar';
+    
+    if (!confirm(`Tem certeza que deseja ${action} este restaurante?`)) {
+        return;
+    }
+    
+    // Mostra loading
+    showLoading();
+    
+    // Faz requisição para a API de desativação
+    fetch(`http://localhost:3002/admin/restaurante/desativar/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        mode: 'cors'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erro ao ${action} restaurante: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Atualiza o status do restaurante no array local
+        restaurante.ativo = newStatus;
+        
+        // Salva no localStorage
+        localStorage.setItem('alipass_restaurantes', JSON.stringify(restaurantes));
+        
+        // Atualiza a tabela
+        renderRestaurantesTable();
+        
+        // Esconde loading
+        hideLoading();
+        
+        // Exibe mensagem de sucesso
+        alert(`Restaurante ${action}do com sucesso!`);
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert(`Erro ao ${action} restaurante: ${error.message}`);
+        hideLoading();
+    });
 }
