@@ -142,18 +142,19 @@ function loadFuncionarios() {
         .then(data => {
             if (Array.isArray(data.funcionarios)) {
                 funcionarios = data.funcionarios.map(func => ({
-                    id: func.id_funcionario,
-                    nome: func.nome,
-                    cpf: func.cpf,
-                    email: func.email,
+                    id: (func.id_funcionario ?? func.a002_id ?? func.id)?.toString?.() ?? '',
+                    nome: func.nome ?? func.a002_nome,
+                    cpf: func.cpf ?? func.a002_cpf,
+                    email: func.email ?? func.a002_email,
                     empresa: func.empresa_nome || getEmpresaNome(empresaId),
                     empresaId: empresaId,
-                    cep: func.cep,
-                    cidade: func.cidade,
-                    bairro: func.bairro,
-                    saldo: parseFloat(func.saldo) || 0,
-                    celular: func.celular,
-                    whatsapp: func.whatsapp
+                    cep: func.cep ?? func.a002_cep,
+                    cidade: func.cidade ?? func.a002_cidade,
+                    bairro: func.bairro ?? func.a002_bairro,
+                    saldo: parseFloat(func.saldo ?? func.a002_saldo_vr) || 0,
+                    celular: func.celular ?? func.a002_celular,
+                    whatsapp: func.whatsapp ?? func.a002_whatsapp,
+                    ativo: Number(func.a002_ativo ?? func.ativo ?? func.status ?? 1)
                 }));
             }
             renderFuncionariosTable();
@@ -193,8 +194,8 @@ function renderFuncionariosTable() {
             <td>${funcionario.celular}</td>
             <td>${funcionario.whatsapp || '-'}</td>
             <td class="actions">
-                <button class="action-btn toggle-status-btn" data-id="${funcionario.id}" data-status="${funcionario.ativo || 1}" title="${(funcionario.ativo || 1) == 1 ? 'Desativar' : 'Ativar'}">
-                    ${(funcionario.ativo || 1) == 1 ? '🟢' : '🔴'}
+                <button class="action-btn toggle-status-btn ${Number(funcionario.ativo) === 1 ? 'status-active' : 'status-inactive'}" data-id="${funcionario.id}" data-status="${Number(funcionario.ativo)}" title="${Number(funcionario.ativo) === 1 ? 'Desativar' : 'Ativar'}">
+                    ${Number(funcionario.ativo) === 1 ? '🟢' : '🔴'}
                 </button>
             </td>
         `;
@@ -434,16 +435,17 @@ function toggleFuncionarioStatus(id, currentStatus) {
     const funcionario = funcionarios.find(f => f.id == id);
     if (!funcionario) return;
     
-    const newStatus = currentStatus == 1 ? 0 : 1;
-    const action = newStatus == 0 ? 'desativar' : 'ativar';
+    const current = Number(currentStatus);
+    const newStatus = current === 1 ? 0 : 1;
+    const action = newStatus === 0 ? 'desativar' : 'ativar';
     
     if (!confirm(`Tem certeza que deseja ${action} este funcionário?`)) {
         return;
     }
     
     showLoading();
-    
-    fetch(`http://localhost:3002/admin/funcionario/desativar/${id}`, {
+    const endpoint = newStatus === 1 ? 'ativar' : 'desativar';
+    fetch(`http://localhost:3002/admin/funcionario/${endpoint}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -464,8 +466,8 @@ function toggleFuncionarioStatus(id, currentStatus) {
         renderFuncionariosTable();
         
         hideLoading();
-        
-        alert(`Funcionário ${action}do com sucesso!`);
+        const mensagem = newStatus === 1 ? 'ativado' : 'desativado';
+        alert(`Funcionário ${mensagem} com sucesso!`);
     })
     .catch(error => {
         console.error('Erro:', error);

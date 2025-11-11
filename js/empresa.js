@@ -148,7 +148,17 @@ function loadEmpresas() {
                 return response.json();
             })
             .then(data => {
-                empresas = data;
+                empresas = data.map(item => ({
+                    id: (item.a001_id ?? item.id)?.toString?.() ?? '',
+                    razao_social: item.a001_razao_social ?? item.razao_social ?? '',
+                    nome_fantasia: item.a001_nome_fantasia ?? item.nome_fantasia ?? '',
+                    cnpj: item.a001_cnpj ?? item.cnpj ?? '',
+                    email: item.a001_email ?? item.email ?? '',
+                    telefone: item.a001_telefone ?? item.telefone ?? '',
+                    cidade: item.a001_cidade ?? item.cidade ?? '',
+                    estado: item.a001_estado ?? item.estado ?? '',
+                    status: Number(item.a001_ativo ?? item.status ?? 1)
+                }));
                 renderEmpresasTable();
                 hideLoading();
             })
@@ -229,8 +239,11 @@ function renderEmpresasTable() {
                 <button class="action-btn edit-btn" data-id="${empresa.id}" title="Editar">
                     ✏️
                 </button>
-                <button class="action-btn toggle-status-btn" data-id="${empresa.id}" data-status="${empresa.status}" title="${empresa.status == 1 ? 'Desativar' : 'Ativar'}">
+                <button class="action-btn toggle-status-btn ${empresa.status == 1 ? 'status-active' : 'status-inactive'}" data-id="${empresa.id}" data-status="${empresa.status}" title="${empresa.status == 1 ? 'Desativar' : 'Ativar'}">
                     ${empresa.status == 1 ? '🟢':'🔴'}
+                </button>
+                <button class="action-btn delete-btn" data-id="${empresa.id}" title="Excluir">
+                    🗑️
                 </button>
             
             </td>
@@ -553,8 +566,8 @@ function toggleEmpresaStatus(id, currentStatus) {
     // Mostra loading
     showLoading();
     
-    // Faz requisição para a API de desativação
-    fetch(`http://localhost:3002/admin/empresa/desativar/${id}`, {
+    const endpoint = newStatus == 1 ? 'ativar' : 'desativar';
+    fetch(`http://localhost:3002/admin/empresa/${endpoint}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -568,7 +581,6 @@ function toggleEmpresaStatus(id, currentStatus) {
         return response.json();
     })
     .then(data => {
-        // Atualiza o status da empresa no array local
         empresa.status = newStatus;
         
         // Salva no localStorage
@@ -579,9 +591,8 @@ function toggleEmpresaStatus(id, currentStatus) {
         
         // Esconde loading
         hideLoading();
-        
-        // Exibe mensagem de sucesso
-        alert(`Empresa ${action}da com sucesso!`);
+        const mensagem = newStatus == 1 ? 'ativada' : 'desativada';
+        alert(`Empresa ${mensagem} com sucesso!`);
     })
     .catch(error => {
         console.error('Erro:', error);

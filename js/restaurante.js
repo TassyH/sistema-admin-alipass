@@ -220,7 +220,8 @@ async function loadRestaurantes() {
                 tipo_conta: item.a003_tipo_conta,
                 nome_titular: item.a003_nome_titular,
                 cpf_cnpj: item.a003_cpf_cnpj,
-                imagem_estabelecimento: item.a003_imagem_estabelecimento
+                imagem_estabelecimento: item.a003_imagem_estabelecimento,
+                ativo: Number(item.a003_ativo ?? 1)
             }));
         } else {
             console.error('Erro ao buscar restaurantes da API:', await response.text());
@@ -280,8 +281,8 @@ function renderRestaurantesTable() {
                 <button class="action-btn edit-btn" data-id="${restaurante.id}" title="Editar">
                     ✏️
                 </button>
-                <button class="action-btn toggle-status-btn" data-id="${restaurante.id}" data-status="${restaurante.ativo}" title="${restaurante.ativo == 1 ? 'Desativar' : 'Ativar'}">
-                    ${restaurante.ativo == 1 ? '🔴':'🟢'}
+                <button class="action-btn toggle-status-btn ${restaurante.ativo == 1 ? 'status-active' : 'status-inactive'}" data-id="${restaurante.id}" data-status="${restaurante.ativo}" title="${restaurante.ativo == 1 ? 'Desativar' : 'Ativar'}">
+                    ${restaurante.ativo == 1 ? '🟢':'🔴'}
                 </button>
             </td>
         `;
@@ -604,9 +605,8 @@ function toggleRestauranteStatus(id, currentStatus) {
     
     // Mostra loading
     showLoading();
-    
-    // Faz requisição para a API de desativação
-    fetch(`http://localhost:3002/admin/restaurante/desativar/${id}`, {
+    const endpoint = newStatus == 1 ? 'ativar' : 'desativar';
+    fetch(`http://localhost:3002/admin/restaurante/${endpoint}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -620,7 +620,6 @@ function toggleRestauranteStatus(id, currentStatus) {
         return response.json();
     })
     .then(data => {
-        // Atualiza o status do restaurante no array local
         restaurante.ativo = newStatus;
         
         // Salva no localStorage
@@ -631,9 +630,8 @@ function toggleRestauranteStatus(id, currentStatus) {
         
         // Esconde loading
         hideLoading();
-        
-        // Exibe mensagem de sucesso
-        alert(`Restaurante ${action}do com sucesso!`);
+        const mensagem = newStatus == 1 ? 'ativado' : 'desativado';
+        alert(`Restaurante ${mensagem} com sucesso!`);
     })
     .catch(error => {
         console.error('Erro:', error);

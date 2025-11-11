@@ -377,6 +377,23 @@ body {
     display: none !important;
 }
 
+/* Status buttons visual */
+.action-btn.toggle-status-btn {
+    border: 1px solid transparent;
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 18px;
+    border-radius: 50%;
+}
+.action-btn.toggle-status-btn.status-active {
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+.action-btn.toggle-status-btn.status-inactive {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
 .error-message {
     color: var(--danger-color);
     margin-top: 0.5rem;
