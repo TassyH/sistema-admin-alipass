@@ -79,7 +79,7 @@ function loadEmpresas() {
         empresaSelect.remove(1);
     }
 
-    fetch('http://localhost:3002/admin/empresas', { mode: 'cors' })
+    fetch('https://api.alipass.com.br/admin/empresas', { mode: 'cors' })
         .then(response => {
             if (!response.ok) throw new Error('Erro ao carregar empresas: ' + response.status);
             return response.json();
@@ -134,7 +134,7 @@ function loadFuncionarios() {
 
     showLoading('Carregando funcionários...');
 
-    fetch(`http://localhost:3002/empresa/${empresaId}/funcionarios`, { mode: 'cors' })
+    fetch(`https://api.alipass.com.br/empresa/${empresaId}/funcionarios`, { mode: 'cors' })
         .then(response => {
             if (!response.ok) throw new Error('Erro ao carregar funcionários: ' + response.status);
             return response.json();
@@ -376,7 +376,7 @@ async function importFile() {
     showLoading('Importando dados...');
 
     try {
-        const response = await fetch(`http://localhost:3002/empresa/${empresaId}/funcionarios/importar`, {
+        const response = await fetch(`https://api.alipass.com.br/empresa/${empresaId}/funcionarios/importar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ funcionarios: previewData })
@@ -445,7 +445,7 @@ function toggleFuncionarioStatus(id, currentStatus) {
     
     showLoading();
     const endpoint = newStatus === 1 ? 'ativar' : 'desativar';
-    fetch(`http://localhost:3002/admin/funcionario/${endpoint}/${id}`, {
+    fetch(`https://api.alipass.com.br/admin/funcionario/${endpoint}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'

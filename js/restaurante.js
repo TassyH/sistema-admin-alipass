@@ -184,7 +184,7 @@ function fetchAddressByCep(cep) {
 async function loadRestaurantes() {
     try {
         // Tenta buscar os restaurantes da API
-        const response = await fetch('http://localhost:3002/restaurantes', {
+        const response = await fetch('https://api.alipass.com.br/restaurantes', {
             method: 'GET',
             mode: 'cors' // Importante para lidar com problemas de CORS
         });
@@ -606,7 +606,7 @@ function toggleRestauranteStatus(id, currentStatus) {
     // Mostra loading
     showLoading();
     const endpoint = newStatus == 1 ? 'ativar' : 'desativar';
-    fetch(`http://localhost:3002/admin/restaurante/${endpoint}/${id}`, {
+    fetch(`https://api.alipass.com.br/admin/restaurante/${endpoint}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'

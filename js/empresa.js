@@ -138,7 +138,7 @@ function loadEmpresas() {
         showLoading();
         
         // Faz requisição para a API
-        fetch('http://localhost:3002/empresas', {
+        fetch('https://api.alipass.com.br/empresas', {
             mode: 'cors' // Adicionado para lidar com possíveis problemas de certificado
         })
             .then(response => {
@@ -364,7 +364,7 @@ function saveEmpresa(event) {
         
         // Faz requisição para a API de atualização
         // Nota: A API usa idEmpresa como parâmetro na URL
-        fetch(`http://localhost:3002/admin/empresa/editar-cadastro/${empresaId}`, {
+        fetch(`https://api.alipass.com.br/admin/empresa/editar-cadastro/${empresaId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -414,7 +414,7 @@ function saveEmpresa(event) {
             return;
         }
         
-        const targetUrl = 'http://localhost:3002/novo/empresa';
+        const targetUrl = 'https://api.alipass.com.br/novo/empresa';
         
         // Mostra loading
         showLoading();
@@ -565,7 +565,7 @@ function toggleEmpresaStatus(id, currentStatus) {
     showLoading();
     
     const endpoint = newStatus == 1 ? 'ativar' : 'desativar';
-    fetch(`http://localhost:3002/admin/empresa/${endpoint}/${id}`, {
+    fetch(`https://api.alipass.com.br/admin/empresa/${endpoint}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
