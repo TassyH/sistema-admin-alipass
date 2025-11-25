@@ -242,9 +242,7 @@ function renderEmpresasTable() {
                 <button class="action-btn toggle-status-btn ${empresa.status == 1 ? 'status-active' : 'status-inactive'}" data-id="${empresa.id}" data-status="${empresa.status}" title="${empresa.status == 1 ? 'Desativar' : 'Ativar'}">
                     ${empresa.status == 1 ? '🟢':'🔴'}
                 </button>
-                <button class="action-btn delete-btn" data-id="${empresa.id}" title="Excluir">
-                    🗑️
-                </button>
+               
             
             </td>
         `;
